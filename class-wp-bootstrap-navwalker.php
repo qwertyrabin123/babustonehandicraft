@@ -8,7 +8,7 @@
  * Plugin Name: WP Bootstrap Navwalker
  * Plugin URI:  https://github.com/wp-bootstrap/wp-bootstrap-navwalker
  * Description: A custom WordPress nav walker class to implement the Bootstrap 4 navigation style in a custom theme using the WordPress built in menu manager.
- * Author: Edward McIntyre - @twittem, WP Bootstrap, William Patton - @pattonwebz
+ * Author: Edward McIntyre - @twittem, WP Bootstrap, William Patton - @pattonwebz, IanDelMar - @IanDelMar
  * Version: 4.3.0
  * Author URI: https://github.com/wp-bootstrap
  * GitHub Plugin URI: https://github.com/wp-bootstrap/wp-bootstrap-navwalker
@@ -92,7 +92,7 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 				// Build a string to use as aria-labelledby.
 				$labelledby = 'aria-labelledby="' . esc_attr( end( $matches[2] ) ) . '"';
 			}
-			$output .= "{$n}{$indent}<ul$class_names $labelledby role=\"menu\">{$n}";
+			$output .= "{$n}{$indent}<ul$class_names $labelledby>{$n}";
 		}
 
 		/**
@@ -127,6 +127,13 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 
 			$classes = empty( $item->classes ) ? array() : (array) $item->classes;
 
+			// Updating the CSS classes of a menu item in the WordPress Customizer preview results in all classes defined
+			// in that particular input box to come in as one big class string.
+			$split_on_spaces = function ( $class ) {
+				return preg_split( '/\s+/', $class );
+			};
+			$classes         = $this->flatten( array_map( $split_on_spaces, $classes ) );
+
 			/*
 			 * Initialize some holder variables to store specially handled item
 			 * wrappers and icons.
@@ -140,7 +147,7 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			 * NOTE: linkmod and icon class arrays are passed by reference and
 			 * are maybe modified before being used later in this function.
 			 */
-			$classes = self::separate_linkmods_and_icons_from_classes( $classes, $linkmod_classes, $icon_classes, $depth );
+			$classes = $this->separate_linkmods_and_icons_from_classes( $classes, $linkmod_classes, $icon_classes, $depth );
 
 			// Join any icon classes plucked from $classes into a string.
 			$icon_class_string = join( ' ', $icon_classes );
@@ -194,12 +201,9 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			$output .= $indent . '<li ' . $id . $class_names . '>';
 
 			// Initialize array for holding the $atts for the link item.
-			$atts = array();
-
+			$atts           = array();
 			$atts['title']  = ! empty( $item->attr_title ) ? $item->attr_title : '';
-
 			$atts['target'] = ! empty( $item->target ) ? $item->target : '';
-
 			if ( '_blank' === $item->target && empty( $item->xfn ) ) {
 				$atts['rel'] = 'noopener noreferrer';
 			} else {
@@ -207,10 +211,9 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			}
 
 			// If the item has_children add atts to <a>.
-			if ( $args->has_children && 0 === $depth && $args->depth > 1 ) {
+			if ( $this->has_children && 0 === $depth ) {
 				$atts['href']          = '#';
 				$atts['data-toggle']   = 'dropdown';
-				$atts['aria-haspopup'] = 'true';
 				$atts['aria-expanded'] = 'false';
 				$atts['class']         = 'dropdown-toggle nav-link';
 				$atts['id']            = 'menu-item-dropdown-' . $item->ID;
@@ -231,7 +234,7 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			$atts['aria-current'] = $item->current ? 'page' : '';
 
 			// Update atts of this item based on any custom linkmod classes.
-			$atts = self::update_atts_for_linkmod_type( $atts, $linkmod_classes );
+			$atts = $this->update_atts_for_linkmod_type( $atts, $linkmod_classes );
 
 			// Allow filtering of the $atts array before using it.
 			$atts = apply_filters( 'nav_menu_link_attributes', $atts, $item, $args, $depth );
@@ -246,7 +249,7 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			}
 
 			// Set a typeflag to easily test if this is a linkmod or not.
-			$linkmod_type = self::get_linkmod_type( $linkmod_classes );
+			$linkmod_type = $this->get_linkmod_type( $linkmod_classes );
 
 			// START appending the internal item contents to the output.
 			$item_output = isset( $args->before ) ? $args->before : '';
@@ -257,7 +260,7 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			 */
 			if ( '' !== $linkmod_type ) {
 				// Is linkmod, output the required element opener.
-				$item_output .= self::linkmod_element_open( $linkmod_type, $attributes );
+				$item_output .= $this->linkmod_element_open( $linkmod_type, $attributes );
 			} else {
 				// With no link mod type set this must be a standard <a> tag.
 				$item_output .= '<a' . $attributes . '>';
@@ -275,7 +278,7 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			}
 
 			/** This filter is documented in wp-includes/post-template.php */
-			$title = apply_filters( 'the_title', esc_html( $item->title ), $item->ID );
+			$title = apply_filters( 'the_title', $item->title, $item->ID );
 
 			/**
 			 * Filters a menu item's title.
@@ -291,7 +294,7 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 
 			// If the .sr-only class was set apply to the nav items text only.
 			if ( in_array( 'sr-only', $linkmod_classes, true ) ) {
-				$title         = self::wrap_for_screen_reader( $title );
+				$title         = $this->wrap_for_screen_reader( $title );
 				$keys_to_unset = array_keys( $linkmod_classes, 'sr-only', true );
 				foreach ( $keys_to_unset as $k ) {
 					unset( $linkmod_classes[ $k ] );
@@ -307,7 +310,7 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			 */
 			if ( '' !== $linkmod_type ) {
 				// Is linkmod, output the required closing element.
-				$item_output .= self::linkmod_element_close( $linkmod_type );
+				$item_output .= $this->linkmod_element_close( $linkmod_type );
 			} else {
 				// With no link mod type set this must be a standard <a> tag.
 				$item_output .= '</a>';
@@ -320,60 +323,63 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 		}
 
 		/**
-		 * Menu Fallback
+		 * Menu fallback.
 		 *
 		 * If this function is assigned to the wp_nav_menu's fallback_cb variable
 		 * and a menu has not been assigned to the theme location in the WordPress
-		 * menu manager the function with display nothing to a non-logged in user,
+		 * menu manager the function will display nothing to a non-logged in user,
 		 * and will add a link to the WordPress menu manager if logged in as an admin.
 		 *
 		 * @param array $args passed from the wp_nav_menu function.
-		 * @return string|void
+		 * @return string|void String when echo is false.
 		 */
 		public static function fallback( $args ) {
 			if ( ! current_user_can( 'edit_theme_options' ) ) {
 				return;
 			}
 
-			// Get Arguments.
-			$container       = $args['container'];
-			$container_id    = $args['container_id'];
-			$container_class = $args['container_class'];
-			$menu_class      = $args['menu_class'];
-			$menu_id         = $args['menu_id'];
-
 			// Initialize var to store fallback html.
 			$fallback_output = '';
 
-			if ( $container ) {
-				$fallback_output .= '<' . esc_attr( $container );
-				if ( $container_id ) {
-					$fallback_output .= ' id="' . esc_attr( $container_id ) . '"';
+			// Menu container opening tag.
+			$show_container = false;
+			if ( $args['container'] ) {
+				/**
+				 * Filters the list of HTML tags that are valid for use as menu containers.
+				 *
+				 * @since WP 3.0.0
+				 *
+				 * @param array $tags The acceptable HTML tags for use as menu containers.
+				 *                    Default is array containing 'div' and 'nav'.
+				 */
+				$allowed_tags = apply_filters( 'wp_nav_menu_container_allowedtags', array( 'div', 'nav' ) );
+				if ( is_string( $args['container'] ) && in_array( $args['container'], $allowed_tags, true ) ) {
+					$show_container   = true;
+					$class            = $args['container_class'] ? ' class="menu-fallback-container ' . esc_attr( $args['container_class'] ) . '"' : ' class="menu-fallback-container"';
+					$id               = $args['container_id'] ? ' id="' . esc_attr( $args['container_id'] ) . '"' : '';
+					$fallback_output .= '<' . $args['container'] . $id . $class . '>';
 				}
-				if ( $container_class ) {
-					$fallback_output .= ' class="' . esc_attr( $container_class ) . '"';
-				}
-				$fallback_output .= '>';
 			}
-			$fallback_output .= '<ul';
-			if ( $menu_id ) {
-				$fallback_output .= ' id="' . esc_attr( $menu_id ) . '"'; }
-			if ( $menu_class ) {
-				$fallback_output .= ' class="' . esc_attr( $menu_class ) . '"'; }
-			$fallback_output .= '>';
+
+			// The fallback menu.
+			$class            = $args['menu_class'] ? ' class="menu-fallback-menu ' . esc_attr( $args['menu_class'] ) . '"' : ' class="menu-fallback-menu"';
+			$id               = $args['menu_id'] ? ' id="' . esc_attr( $args['menu_id'] ) . '"' : '';
+			$fallback_output .= '<ul' . $id . $class . '>';
 			$fallback_output .= '<li class="nav-item"><a href="' . esc_url( admin_url( 'nav-menus.php' ) ) . '" class="nav-link" title="' . esc_attr__( 'Add a menu', 'wp-bootstrap-navwalker' ) . '">' . esc_html__( 'Add a menu', 'wp-bootstrap-navwalker' ) . '</a></li>';
 			$fallback_output .= '</ul>';
-			if ( $container ) {
-				$fallback_output .= '</' . esc_attr( $container ) . '>';
+
+			// Menu container closing tag.
+			if ( $show_container ) {
+				$fallback_output .= '</' . $args['container'] . '>';
 			}
 
-			// If $args has 'echo' key and it's true echo, otherwise return.
+			// if $args has 'echo' key and it's true echo, otherwise return.
 			if ( array_key_exists( 'echo', $args ) && $args['echo'] ) {
-				echo $fallback_output; // WPCS: XSS OK.
-				return;
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $fallback_output;
+			} else {
+				return $fallback_output;
 			}
-
-			return $fallback_output;
 		}
 
 		/**
@@ -385,11 +391,12 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 		 * @return array $args The altered nav instance arguments.
 		 */
 		public function add_schema_to_navbar_ul( $args ) {
-			$wrap = $args['items_wrap'];
-			if ( strpos( $wrap, 'SiteNavigationElement' ) === false ) {
-				$args['items_wrap'] = preg_replace( '/(>).*>?\%3\$s/', ' itemscope itemtype="http://www.schema.org/SiteNavigationElement"$0', $wrap );
+			if ( isset( $args['items_wrap'] ) ) {
+				$wrap = $args['items_wrap'];
+				if ( strpos( $wrap, 'SiteNavigationElement' ) === false ) {
+					$args['items_wrap'] = preg_replace( '/(>).*>?\%3\$s/', ' itemscope itemtype="http://www.schema.org/SiteNavigationElement"$0', $wrap );
+				}
 			}
-
 			return $args;
 		}
 
@@ -576,5 +583,26 @@ if ( ! class_exists( 'WP_Bootstrap_Navwalker' ) ) :
 			}
 			return $output;
 		}
+
+		/**
+		 * Flattens a multidimensional array to a simple array.
+		 *
+		 * @param array $array a multidimensional array.
+		 *
+		 * @return array a simple array
+		 */
+		public function flatten( $array ) {
+			$result = array();
+			foreach ( $array as $element ) {
+				if ( is_array( $element ) ) {
+					array_push( $result, ...$this->flatten( $element ) );
+				} else {
+					$result[] = $element;
+				}
+			}
+			return $result;
+		}
+
 	}
+
 endif;
