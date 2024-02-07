@@ -1,0 +1,32 @@
+[16-Nov-2022 22:11:07 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php:15
+Stack trace:
+#0 {main}
+  thrown in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php on line 15
+[16-Nov-2022 22:11:10 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php:15
+Stack trace:
+#0 {main}
+  thrown in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php on line 15
+[16-Nov-2022 22:12:12 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php:15
+Stack trace:
+#0 {main}
+  thrown in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php on line 15
+[16-Nov-2022 22:12:20 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php:15
+Stack trace:
+#0 {main}
+  thrown in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php on line 15
+[16-Nov-2022 22:13:20 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php:15
+Stack trace:
+#0 {main}
+  thrown in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php on line 15
+[16-Nov-2022 22:13:22 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php:15
+Stack trace:
+#0 {main}
+  thrown in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php on line 15
+[16-Nov-2022 22:13:28 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php:15
+Stack trace:
+#0 {main}
+  thrown in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php on line 15
+[16-Nov-2022 22:13:30 America/Chicago] PHP Fatal error:  Uncaught Error: Call to undefined function get_header() in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php:15
+Stack trace:
+#0 {main}
+  thrown in /home1/babustonehandicr/public_html/wp-content/themes/mrm-flower/index.php on line 15
