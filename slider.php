@@ -1,1 +1,1 @@
-show me the slider wo slider
+hello this is the slider
