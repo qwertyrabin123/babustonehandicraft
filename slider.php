@@ -1,1 +1,1 @@
-show me the slider
+show me the slider wo slider
